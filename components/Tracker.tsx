@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Todo } from '../types/Index';
@@ -19,16 +19,15 @@ const Main: React.FC = () => {
     const [newTodo, setNewTodo] = useState<string>('');
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editText, setEditText] = useState<string>('');
-    // Add mode state
     const [mode, setMode] = useState<'light' | 'dark'>('light');
     const [currentDay, setCurrentDay] = useState<string>('');
 
-    // Add toggle mode function
     const toggleMode = () => {
         setMode(prevMode => prevMode === 'light' ? 'dark' : 'light');
     };
 
-    // Load todos from AsyncStorage when component mounts
+
+    // Load todos from AsyncStorage while mounting
     useEffect(() => {
         loadTodos();
         const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
@@ -39,12 +38,12 @@ const Main: React.FC = () => {
             const sundayTasks = [
                 {
                     id: generateId(),
-                    text: "Take D3",
+                    text: "Take Uprise D3",
                     completed: false
                 },
                 {
                     id: generateId(),
-                    text: "Folitrax",
+                    text: "TakeFolitrax",
                     completed: false
                 },
             ];
@@ -69,8 +68,6 @@ const Main: React.FC = () => {
             addSundayTasks();
         }
     }, []);
-
-
 
     const loadTodos = async () => {
         try {
