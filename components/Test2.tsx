@@ -1,12 +1,11 @@
 import React, { useRef, useState } from 'react';
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity, SafeAreaView } from 'react-native';
 import { WebView } from 'react-native-webview';
-import { fileUploadFunction, cameraAccessFunction } from '../utils/utils';
+import { fileUploadFunction, cameraAccessFunction, testHTML } from '../utils/helper';
 
 // Conditional Event Handler
 const handleWebViewMessage2 = async (event: any) => {
     const message = event.nativeEvent.data;
-
     try {
         const data = JSON.parse(message);
 
@@ -79,49 +78,11 @@ const Test2: React.FC = () => {
     //     })();
     // `;
 
-    // Simple test HTML
-    const testHTML = `
-        <!DOCTYPE html>
-        <html>
-        <body>
-             <h1>File Upload Test</h1>
-            
-            <button class="test-button" onclick="testFileUpload()">
-             Test File Upload
-            </button>
-            
-             <button class="test-button" onclick="testCameraAccess()">
-             Test Camera Access
-            </button>
-            <script>
-                function testFileUpload() {
-                    const message = JSON.stringify({
-                        type: 'file_upload',
-                        data: 'test_file_upload',
-                        timestamp: Date.now()
-                    });
-                    window.ReactNativeWebView.postMessage(message);
-                    console.log(' Test button clicked, sending message:', message);
-                }
 
-                function testCameraAccess() {
-                    const message = JSON.stringify({
-                        type: 'camera_open',
-                        data: 'test_camera_access',
-                        timestamp: Date.now()
-                    });
-                    window.ReactNativeWebView.postMessage(message);
-                    console.log(' Test button clicked, sending message:', message);
-                }
-            </script>
-        </body>
-        </html>
-    `;
 
     return (
 
         <View style={styles.container}>
-
             <WebView
                 ref={webViewRef}
                 source={{ html: testHTML }}
