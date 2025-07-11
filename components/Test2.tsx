@@ -1,49 +1,44 @@
 import React, { useRef, useState } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, SafeAreaView } from 'react-native';
 import { WebView } from 'react-native-webview';
-const { width, height } = Dimensions.get('window');
-import { fileUploadFunction } from '../utils/utils';
+import { fileUploadFunction, cameraAccessFunction } from '../utils/utils';
 
-// util
+// Conditional Event Handler
 const handleWebViewMessage2 = async (event: any) => {
     const message = event.nativeEvent.data;
-    console.log("message", message)
+
     try {
         const data = JSON.parse(message);
 
-        // Core switch statement
         switch (data.type) {
             case 'file_upload':
                 const file = await fileUploadFunction();
                 break;
+
             case 'camera_open':
-                // cameraOpenFunction()
+                console.log(" Camera access requested");
+                await cameraAccessFunction();
                 break;
+
             case 'custom_event':
                 // customEventFunction()
                 break;
+            default:
+                console.log("unknown type", data.type);
         }
     } catch (error) {
-        console.log('Error parsing message:', error);
+        console.log("Error", error);
     }
 };
 
 const Test2: React.FC = () => {
     const webViewRef = useRef<WebView>(null);
-    const [receivedMessages, setReceivedMessages] = useState<string[]>([]);
-
-    // Handle messages from WebView
-    // const handleWebViewMessage = (event: any) => {
-    //     const message = event.nativeEvent.data;
-    //     setReceivedMessages(prev => [...prev, `WebView clicked: ${message}`]);
-    // };
 
     // Send message to WebView
     const sendToWebView = () => {
         const message = 'FROM_REACT_NATIVE';
         console.log('📱 React Native sending:', message);
         webViewRef.current?.postMessage(message);
-        setReceivedMessages(prev => [...prev, `Sent: ${message}`]);
     };
 
     // JavaScript to inject - captures any click on the webview
@@ -58,43 +53,89 @@ const Test2: React.FC = () => {
     //                 timestamp: Date.now()
     //             });
     //             window.ReactNativeWebView.postMessage(message);
+    //             console.log('🌐 Click listener injected successfully');
     //         });
-    //         console.log('🌐 Click listener injected successfully');
     //     })();
     // `;
-    const injectedJavaScript = `
-    document.addEventListener('click', function(e) {
-        const message = JSON.stringify({
-            type: 'file_upload',  
-            data: 'your_data'         
-        });
-        window.ReactNativeWebView.postMessage(message);
-    });
-`;
+    // const injectedJavaScript = `
+    //     (function() {
+    //         // Create a test button
+    //         const testButton = document.createElement('button');
+    //         testButton.textContent = '📁 Test File Upload';
+    //         testButton.style.cssText = 'position: fixed; top: 20px; left: 20px; z-index: 10000; padding: 10px; background: #007AFF; color: white; border: none; border-radius: 5px; font-size: 16px;';
+
+    //         testButton.onclick = function() {
+    //             const message = JSON.stringify({
+    //                 type: 'file_upload',
+    //                 data: 'test_file_upload',
+    //                 timestamp: Date.now()
+    //             });
+    //             window.ReactNativeWebView.postMessage(message);
+    //             console.log('🌐 Test button clicked, sending message:', message);
+    //         };
+
+    //         document.body.appendChild(testButton);
+    //         console.log('🌐 Test button added to page');
+    //     })();
+    // `;
+
+    // Simple test HTML
+    const testHTML = `
+        <!DOCTYPE html>
+        <html>
+        <body>
+             <h1>File Upload Test</h1>
+            
+            <button class="test-button" onclick="testFileUpload()">
+             Test File Upload
+            </button>
+            
+             <button class="test-button" onclick="testCameraAccess()">
+             Test Camera Access
+            </button>
+            <script>
+                function testFileUpload() {
+                    const message = JSON.stringify({
+                        type: 'file_upload',
+                        data: 'test_file_upload',
+                        timestamp: Date.now()
+                    });
+                    window.ReactNativeWebView.postMessage(message);
+                    console.log(' Test button clicked, sending message:', message);
+                }
+
+                function testCameraAccess() {
+                    const message = JSON.stringify({
+                        type: 'camera_open',
+                        data: 'test_camera_access',
+                        timestamp: Date.now()
+                    });
+                    window.ReactNativeWebView.postMessage(message);
+                    console.log(' Test button clicked, sending message:', message);
+                }
+            </script>
+        </body>
+        </html>
+    `;
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.header}>Internal Website Click Detection</Text>
 
+        <View style={styles.container}>
+
+            <WebView
+                ref={webViewRef}
+                source={{ html: testHTML }}
+                style={styles.webview}
+                javaScriptEnabled={true}
+                onMessage={handleWebViewMessage2}
+            // injectedJavaScript={injectedJavaScript}
+            />
+
+            <Text style={styles.header}>Internal Website Click Detection</Text>
             <TouchableOpacity style={styles.button} onPress={sendToWebView}>
                 <Text style={styles.buttonText}>Send to WebView</Text>
             </TouchableOpacity>
 
-            <View style={styles.messagesContainer}>
-                <Text style={styles.messagesTitle}>Click Events:</Text>
-                {receivedMessages.map((msg, index) => (
-                    <Text key={index} style={styles.messageText}>{msg}</Text>
-                ))}
-            </View>
-
-            <WebView
-                ref={webViewRef}
-                source={{ uri: 'https://www.google.com' }}
-                style={styles.webview}
-                javaScriptEnabled={true}
-                onMessage={handleWebViewMessage2}
-                injectedJavaScript={injectedJavaScript}
-            />
         </View>
     );
 };
@@ -142,7 +183,10 @@ const styles = StyleSheet.create({
     },
     webview: {
         flex: 1,
-        width: width,
+        width: '100%',
+        marginTop: 50,
+        borderWidth: 1,
+        borderColor: 'red',
     },
 });
 

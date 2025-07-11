@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
+import * as ImagePicker from 'expo-image-picker';
 
 // Flag to prevent multiple simultaneous document picker calls
 let isPickerActive = false;
@@ -31,7 +32,6 @@ export async function fileUploadFunction() {
             console.log('📄 File type:', file.mimeType);
             console.log('📄 File URI:', file.uri);
 
-
             // Check if it's an image
             if (file.mimeType && file.mimeType.startsWith('image/')) {
                 console.log('🖼️ This is an image file!');
@@ -48,13 +48,12 @@ export async function fileUploadFunction() {
             };
         } else {
             // User cancelled
-            console.log(' User cancelled file picker');
+            console.log('❌ User cancelled file picker');
             return {
                 success: false,
                 reason: 'cancelled'
             };
         }
-
 
     } catch (error) {
         console.error('❌ File picking error:', error);
@@ -65,10 +64,27 @@ export async function fileUploadFunction() {
         };
     } finally {
         // Always reset the flag when done
-        console.log('Resetting picker flag');
+        console.log('🔄 Resetting picker flag');
         isPickerActive = false;
 
         // Small delay to ensure picker is fully closed
         await new Promise(resolve => setTimeout(resolve, 100));
     }
 }
+
+export async function cameraAccessFunction() {
+    const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+        const image = result.assets[0];
+        console.log('Photo captured:', image.uri);
+        return { success: true, uri: image.uri };
+    } else {
+        console.log('Camera cancelled');
+        return { success: false };
+    }
+}
+
